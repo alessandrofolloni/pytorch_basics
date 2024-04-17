@@ -58,7 +58,7 @@ y_test = torch.LongTensor(y_test)
 
 # Set the loss
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr = 0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
 print(model.parameters)
 
@@ -82,9 +82,43 @@ for i in range(epochs+1):
     loss.backward()
     optimizer.step()
 
-
 plt.plot(range(epochs+1), losses)
 plt.ylabel("Loss/error")
 plt.xlabel("Epoch")
-plt.show()
+#plt.show()
 
+# evaluate on test data set
+with torch.no_grad():
+    # backpropagation turned off
+    y_eval = model.forward(X_test)
+    loss = criterion(y_eval, y_test)
+
+correct = 0
+with torch.no_grad():
+    for i, data in enumerate(X_test):
+        y_val = model.forward(data)
+
+        if y_test[i] == 0:
+            x = 'Setosa'
+        elif y_test[i] == 1:
+            x = 'Versicolor'
+        else:
+            x = 'Virginica'
+
+        print(f'{i+1}.) {str(y_val)} \t {y_test[i]} \t {y_val.argmax().item()}')
+
+        if y_val.argmax().item() == y_test[i]:
+            correct += 1
+
+print(str(correct) + " corrects")
+
+
+new_iris = torch.tensor([4.7, 3.2, 1.3, 0.2])
+with torch.no_grad():
+    print(model(new_iris))
+
+torch.save(model.state_dict(), 'my_iris_model.pt')
+
+new_model = Model()
+new_model.load_state_dict(torch.load('my_iris_model.pt'))
+print(new_model.eval())
